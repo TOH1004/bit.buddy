@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bit.Buddy | Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-green: #96F027;
+      --primary-blue: #007CF7;
+      --light-gray: #f5f5f5;
+      --text-dark: #111;
+      --accent-orange: #FF6B35;
+      --accent-purple: #6E44FF;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--light-gray);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Styles - Extracted from first file */
+    .sidebar {
+      width: 200px;
+      background-color: var(--primary-green);
+      min-height: 100vh;
+      padding: 20px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: fixed;
+      height: 100%;
+    }
+
+    .pixel-logo {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 1rem;
+      margin-bottom: 30px;
+      color: var(--text-dark);
+      line-height: 1.4;
+    }
+
+    .sidebar nav ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .sidebar nav li {
+      margin-bottom: 15px;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar nav li:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      transform: translateX(5px);
+    }
+
+    .sidebar nav li.active {
+      background-color: rgba(0, 0, 0, 0.08);
+      font-weight: bold;
+    }
+
+    .sidebar nav li i {
+      width: 20px;
+      color: var(--text-dark);
+    }
+
+    .sidebar nav li a {
+      color: inherit;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      font-size: 0.95rem;
+    }
+
+    .sidebar nav li a:hover {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .user-profile:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .profile-icon {
+      width: 36px;
+      height: 36px;
+      background-color: var(--primary-blue);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .user-info {
+      margin-left: 10px;
+    }
+
+    .user-name {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-dark);
+    }
+
+    .user-role {
+      font-size: 0.75rem;
+      color: #666;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 60px;
+        padding: 10px;
+      }
+      .sidebar nav li span {
+        display: none;
+      }
+      .pixel-logo {
+        font-size: 0.7rem;
+      }
+      .user-info {
+        display: none;
+      }
+      .profile-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
+      }
+    }
+
+    /* Main Content Styles */
+    .main-content {
+      flex: 1;
+      padding: 40px;
+      margin-left: 200px;
+      background: white;
+    }
+
+    .status-badge {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .ongoing-badge {
+      background-color: #e3f2fd;
+      color: var(--primary-blue);
+    }
+
+    .new-badge {
+      background-color: #fff0e6;
+      color: var(--accent-orange);
+    }
+
+    .progress-container {
+      margin-top: 15px;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .progress {
+      height: 8px;
+      border-radius: 4px;
+    }
+
+    .progress-bar {
+      background-color: var(--primary-blue);
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 25px;
+      margin-bottom: 25px;
+      transition: all 0.3s ease;
+      border-left: 4px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .card.ongoing {
+      border-left-color: var(--primary-blue);
+    }
+
+    .card.new {
+      border-left-color: var(--accent-orange);
+    }
+
+    .card h5 {
+      color: var(--primary-blue);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--primary-blue), #00a8ff);
+      color: white;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .welcome-text h2 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    .welcome-text p {
+      opacity: 0.9;
+      max-width: 600px;
+    }
+
+    .welcome-image {
+      width: 180px;
+      height: 180px;
+      background-image: url('https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80');
+      background-size: cover;
+      background-position: center;
+      border-radius: 50%;
+      border: 4px solid white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .ai-assistant {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background-color: var(--primary-blue);
+      color: white;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 124, 247, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 100;
+    }
+
+    .ai-assistant:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(0, 124, 247, 0.4);
+    }
+
+    .ai-assistant i {
+      font-size: 1.5rem;
+    }
+
+    .ai-modal {
+      display: none;
+      position: fixed;
+      bottom: 100px;
+      right: 30px;
+      width: 300px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      z-index: 101;
+      padding: 20px;
+    }
+
+    .ai-modal h5 {
+      color: var(--primary-blue);
+      margin-bottom: 15px;
+    }
+
+    .ai-message {
+      background-color: var(--light-gray);
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+    }
+
+    .ai-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ai-option {
+      padding: 8px 12px;
+      background-color: #f8f9fa;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.85rem;
+    }
+
+    .ai-option:hover {
+      background-color: #e9ecef;
+    }
+
+    .project-filter {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+    }
+
+    .filter-btn {
+      padding: 6px 12px;
+      border-radius: 20px;
+      background-color: white;
+      border: 1px solid #ddd;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.85rem;
+    }
+
+    .filter-btn.active {
+      background-color: var(--primary-blue);
+      color: white;
+      border-color: var(--primary-blue);
+    }
+
+    .filter-btn:hover:not(.active) {
+      background-color: #f1f1f1;
+    }
+
+    .timeline-item {
+      display: flex;
+      margin-bottom: 20px;
+      position: relative;
+      padding-left: 30px;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 0;
+      bottom: -20px;
+      width: 2px;
+      background-color: #e3f2fd;
+    }
+
+    .timeline-item.completed::before {
+      background-color: var(--primary-green);
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background-color: #e3f2fd;
+      border: 3px solid white;
+      z-index: 1;
+    }
+
+    .timeline-item.completed .timeline-dot {
+      background-color: var(--primary-green);
+    }
+
+    .timeline-content {
+      flex: 1;
+    }
+
+    .timeline-date {
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .timeline-title {
+      font-weight: 500;
+      margin-bottom: 5px;
+      color: var(--primary-blue);
+    }
+
+    .timeline-description {
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .document-card {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .document-card:hover {
+      border-color: var(--primary-blue);
+      box-shadow: 0 2px 8px rgba(0, 124, 247, 0.1);
+    }
+
+    .document-icon {
+      font-size: 2rem;
+      color: var(--primary-blue);
+      margin-bottom: 10px;
+    }
+
+    .document-title {
+      font-weight: 500;
+      font-size: 0.95rem;
+      margin-bottom: 5px;
+    }
+
+    .document-status {
+      font-size: 0.8rem;
+      padding: 3px 8px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+
+    .status-completed {
+      background-color: #e6ffed;
+      color: #38a169;
+    }
+
+    .status-pending {
+      background-color: #fff5f5;
+      color: #e53e3e;
+    }
+
+    .resource-card {
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+
+    .resource-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .resource-image {
+      height: 120px;
+      background-color: #e3f2fd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-blue);
+      font-size: 2.5rem;
+    }
+
+    .resource-content {
+      padding: 15px;
+      background: white;
+    }
+
+    .resource-title {
+      font-weight: 500;
+      margin-bottom: 5px;
+      color: var(--primary-blue);
+    }
+
+    .resource-category {
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .resource-link {
+      color: var(--primary-blue);
+      font-size: 0.9rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .resource-link i {
+      margin-left: 5px;
+      font-size: 0.8rem;
+    }
+
+    .team-member {
+      display: flex;
+      align-items: center;
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+    }
+
+    .team-member:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .member-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #e3f2fd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      color: var(--primary-blue);
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .member-info {
+      flex: 1;
+    }
+
+    .member-name {
+      font-weight: 500;
+      margin-bottom: 3px;
+      color: var(--primary-blue);
+    }
+
+    .member-role {
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .member-connect {
+      color: var(--primary-blue);
+      font-size: 0.8rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .member-connect i {
+      margin-left: 5px;
+      font-size: 0.7rem;
+    }
+
+    .alert {
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      display: flex;
+      align-items: flex-start;
+      border-left: 4px solid transparent;
+    }
+
+    .alert i {
+      margin-right: 10px;
+      font-size: 1.2rem;
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--primary-blue);
+    }
+
+    .alert-info {
+      background-color: #f0f8ff;
+      border-left-color: var(--primary-blue);
+      color: var(--text-dark);
+    }
+
+    .alert-warning {
+      background-color: #fffaf0;
+      border-left-color: #ffc107;
+      color: var(--text-dark);
+    }
+
+    .alert-success {
+      background-color: #f0fff4;
+      border-left-color: #38a169;
+      color: var(--text-dark);
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        margin-left: 60px;
+        padding: 20px;
+      }
+
+      .welcome-banner {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .welcome-image {
+        margin-top: 15px;
+        width: 120px;
+        height: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar - Extracted from first file -->
+  <div class="sidebar">
+    <div>
+      <h1 class="pixel-logo">Bit.Buddy</h1>
+      <nav>
+        <ul>
+          <li class="active">
+            <a href="homepage(newhires).html">
+              <i class="fas fa-home"></i> <span>Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="timeline(newhires).html">
+              <i class="fas fa-clock"></i> <span>Timeline</span>
+            </a>
+          </li>
+          <li>
+            <a href="document(newhires).html">
+              <i class="fas fa-file-alt"></i> <span>Documents</span>
+            </a>
+          </li>
+          <li>
+            <a href="resources(newhires).html">
+              <i class="fas fa-book"></i> <span>Resources</span>
+            </a>
+          </li>
+          <li>
+            <a href="team(newhires).html">
+              <i class="fas fa-users"></i> <span>Team</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="user-profile">
+      <div class="profile-icon">
+        <i class="fas fa-user"></i>
+      </div>
+      <div class="user-info">
+        <div class="user-name">Alex Chen</div>
+        <div class="user-role">New Hire Mode</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2>Welcome Back, Alex</h2>
+        <p class="text-muted mb-0">Here's your onboarding progress at a glance</p>
+      </div>
+      <div class="project-filter">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="ongoing">Ongoing</button>
+        <button class="filter-btn" data-filter="new">New</button>
+      </div>
+    </div>
+
+    <div class="welcome-banner">
+      <div class="welcome-text">
+        <h2>Your Onboarding Journey</h2>
+        <p>Bit.Buddy is here to guide you through every step of your onboarding process. Complete tasks, meet your team, and access resources all in one place.</p>
+      </div>
+      <div class="welcome-image"></div>
+    </div>
+
+    <!-- Onboarding Progress Section -->
+    <div class="card ongoing">
+      <h5>
+        Onboarding Progress
+        <span class="status-badge ongoing-badge">In Progress</span>
+      </h5>
+      <div class="row">
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="card ongoing">
+            <h5>
+              Overall Progress
+              <span class="status-badge ongoing-badge">Week 5</span>
+            </h5>
+            <p>Track your overall onboarding milestones.</p>
+            <div class="progress-container">
+              <div class="progress-label">
+                <span>Progress</span>
+                <span>28%</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" style="width: 28%"></div>
+              </div>
+            </div>
+            <p class="text-muted mt-2">7 of 25 milestones completed</p>
+            <div class="d-flex gap-2 mt-3">
+              <button class="btn btn-sm btn-outline-primary">View Details</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="card ongoing">
+            <h5>
+              Documents
+              <span class="status-badge ongoing-badge">Paperwork</span>
+            </h5>
+            <p>Submit required documents.</p>
+            <div class="progress-container">
+              <div class="progress-label">
+                <span>Progress</span>
+                <span>65%</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" style="width: 65%"></div>
+              </div>
+            </div>
+            <p class="text-muted mt-2">13 of 20 documents submitted</p>
+            <div class="d-flex gap-2 mt-3">
+              <button class="btn btn-sm btn-outline-primary">Upload Now</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="card new">
+            <h5>
+              Training
+              <span class="status-badge new-badge">Modules</span>
+            </h5>
+            <p>Complete training modules.</p>
+            <div class="progress-container">
+              <div class="progress-label">
+                <span>Progress</span>
+                <span>15%</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" style="width: 15%"></div>
+              </div>
+            </div>
+            <p class="text-muted mt-2">3 of 20 modules completed</p>
+            <div class="d-flex gap-2 mt-3">
+              <button class="btn btn-sm btn-outline-primary">Start Training</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="card ongoing">
+            <h5>
+              Connections
+              <span class="status-badge ongoing-badge">Team</span>
+            </h5>
+            <p>Meet your team members.</p>
+            <div class="progress-container">
+              <div class="progress-label">
+                <span>Progress</span>
+                <span>40%</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" style="width: 40%"></div>
+              </div>
+            </div>
+            <p class="text-muted mt-2">8 of 20 introductions made</p>
+            <div class="d-flex gap-2 mt-3">
+              <button class="btn btn-sm btn-outline-primary">Connect Now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Recommendations -->
+      <h5 class="mt-4">AI Recommendations</h5>
+      <div class="alert alert-info">
+        <i class="fas fa-lightbulb"></i>
+        <div class="alert-content">
+          <div class="alert-title">Complete Benefits Enrollment</div>
+          <p>Based on your progress, we recommend completing your benefits enrollment today to ensure coverage starts on time.</p>
+        </div>
+      </div>
+      <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div class="alert-content">
+          <div class="alert-title">Security Training Overdue</div>
+          <p>Your security training is overdue. Complete it by Friday to maintain system access privileges.</p>
+        </div>
+      </div>
+      <div class="alert alert-success">
+        <i class="fas fa-user-friends"></i>
+        <div class="alert-content">
+          <div class="alert-title">Schedule Meeting with Sarah Johnson</div>
+          <p>You should meet with Sarah Johnson (Engineering Lead) this week. <a href="#" style="color: #38a169; font-weight: 500;">Schedule now <i class="fas fa-arrow-right"></i></a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline Preview Section -->
+    <div class="card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5>Timeline Preview</h5>
+        <a href="timeline(newhires).html" class="text-primary text-decoration-none">View Full Timeline <i class="fas fa-chevron-right"></i></a>
+      </div>
+      <div class="timeline-preview">
+        <div class="timeline-item completed">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-date">Monday, June 5</div>
+            <div class="timeline-title">First Day Orientation</div>
+            <div class="timeline-description">Completed all orientation sessions and received your equipment.</div>
+          </div>
+        </div>
+        <div class="timeline-item completed">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-date">Tuesday, June 6</div>
+            <div class="timeline-title">HR Paperwork Submission</div>
+            <div class="timeline-description">Submitted tax forms and employment contracts.</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-date">Today, June 7</div>
+            <div class="timeline-title">Security Training</div>
+            <div class="timeline-description">Complete the mandatory security awareness training.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Documents Preview Section -->
+    <div class="card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5>Documents Overview</h5>
+        <a href="document(newhires).html" class="text-primary text-decoration-none">View All Documents <i class="fas fa-chevron-right"></i></a>
+      </div>
+      <div class="row">
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="document-card">
+            <div class="document-icon">
+              <i class="fas fa-file-contract"></i>
+            </div>
+            <div class="document-title">Employment Contract</div>
+            <div class="document-status status-completed">Completed</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="document-card">
+            <div class="document-icon">
+              <i class="fas fa-id-card"></i>
+            </div>
+            <div class="document-title">Tax Forms</div>
+            <div class="document-status status-completed">Completed</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="document-card">
+            <div class="document-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="document-title">NDA Agreement</div>
+            <div class="document-status status-completed">Completed</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="document-card">
+            <div class="document-icon">
+              <i class="fas fa-heartbeat"></i>
+            </div>
+            <div class="document-title">Benefits Enrollment</div>
+            <div class="document-status status-pending">Pending</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resources Preview Section -->
+    <div class="card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5>Recommended Resources</h5>
+        <a href="resources(newhires).html" class="text-primary text-decoration-none">View All Resources <i class="fas fa-chevron-right"></i></a>
+      </div>
+      <div class="row">
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="resource-card">
+            <div class="resource-image">
+              <i class="fas fa-code"></i>
+            </div>
+            <div class="resource-content">
+              <div class="resource-title">Engineering Style Guide</div>
+              <div class="resource-category">Development Standards</div>
+              <a href="#" class="resource-link">View Guide <i class="fas fa-external-link-alt"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="resource-card">
+            <div class="resource-image">
+              <i class="fas fa-building"></i>
+            </div>
+            <div class="resource-content">
+              <div class="resource-title">Company Culture Handbook</div>
+              <div class="resource-category">Organizational</div>
+              <a href="#" class="resource-link">Read Now <i class="fas fa-external-link-alt"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="resource-card">
+            <div class="resource-image">
+              <i class="fas fa-server"></i>
+            </div>
+            <div class="resource-content">
+              <div class="resource-title">Infrastructure Overview</div>
+              <div class="resource-category">Technical</div>
+              <a href="#" class="resource-link">Learn More <i class="fas fa-external-link-alt"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Team Preview Section -->
+    <div class="card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5>Meet Your Team</h5>
+        <a href="team(newhires).html" class="text-primary text-decoration-none">View Full Team <i class="fas fa-chevron-right"></i></a>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-4">
+          <div class="team-member">
+            <div class="member-avatar">SJ</div>
+            <div class="member-info">
+              <div class="member-name">Sarah Johnson</div>
+              <div class="member-role">Engineering Lead</div>
+              <a href="#" class="member-connect">Connect <i class="fas fa-comment"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 mb-4">
+          <div class="team-member">
+            <div class="member-avatar">MP</div>
+            <div class="member-info">
+              <div class="member-name">Michael Patel</div>
+              <div class="member-role">Product Manager</div>
+              <a href="#" class="member-connect">Connect <i class="fas fa-comment"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 mb-4">
+          <div class="team-member">
+            <div class="member-avatar">DW</div>
+            <div class="member-info">
+              <div class="member-name">David Wilson</div>
+              <div class="member-role">Senior Developer</div>
+              <a href="#" class="member-connect">Connect <i class="fas fa-comment"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 mb-4">
+          <div class="team-member">
+            <div class="member-avatar">EB</div>
+            <div class="member-info">
+              <div class="member-name">Emily Brown</div>
+              <div class="member-role">HR Specialist</div>
+              <a href="#" class="member-connect">Connect <i class="fas fa-comment"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Assistant Floating Button -->
+  <div class="ai-assistant pulse" id="aiAssistantBtn">
+    <i class="fas fa-robot"></i>
+  </div>
+
+  <!-- AI Assistant Modal -->
+  <div class="ai-modal" id="aiModal">
+    <h5>Onboarding Assistant</h5>
+    <div class="ai-message">
+      Hi Alex! I can help you prioritize tasks, find resources, or connect with team members.
+    </div>
+    <div class="ai-options">
+      <div class="ai-option">Prioritize my tasks for today</div>
+      <div class="ai-option">Find resources for security training</div>
+      <div class="ai-option">Connect me with Sarah Johnson</div>
+      <div class="ai-option">Explain benefits enrollment process</div>
+    </div>
+  </div>
+
+  <script>
+    // AI Assistant Toggle
+    const aiBtn = document.getElementById('aiAssistantBtn');
+    const aiModal = document.getElementById('aiModal');
+
+    aiBtn.addEventListener('click', () => {
+      aiModal.style.display = aiModal.style.display === 'block' ? 'none' : 'block';
+    });
+
+    // Card Filter
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const cards = document.querySelectorAll('.card');
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const filter = btn.dataset.filter;
+
+        cards.forEach(card => {
+          if (filter === 'all') {
+            card.style.display = 'block';
+          } else if (card.classList.contains(filter)) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Simulate AI response
+    document.querySelectorAll('.ai-option').forEach(option => {
+      option.addEventListener('click', () => {
+        alert("Based on your progress, I recommend:\n\n1. Complete Security Training (overdue)\n2. Schedule meeting with Sarah Johnson\n\nI can guide you through these steps if needed!");
+        aiModal.style.display = 'none';
+      });
+    });
+  </script>
+</body>
+</html>

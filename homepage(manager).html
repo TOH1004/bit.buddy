@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bit.Buddy Manager Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+  <style>
+    :root {
+      --primary-green: #96F027;
+      --primary-blue: #007CF7;
+      --text-dark: #111;
+      --background-light: #ffffff;
+      --light-gray: #f5f5f5;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: 'Inter', Arial, sans-serif;
+      background-color: var(--light-gray);
+      overflow-x: hidden;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+      width: 180px;
+      background-color: var(--primary-green);
+      min-height: 100vh;
+      padding: 15px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: fixed;
+      transition: width 0.3s ease;
+    }
+
+    .sidebar.collapsed {
+      width: 50px;
+    }
+
+    .pixel-logo {
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.9rem;
+      margin-bottom: 25px;
+      color: var(--text-dark);
+      line-height: 1.4;
+    }
+
+    .sidebar.collapsed .pixel-logo {
+      font-size: 0.6rem;
+    }
+
+    .sidebar nav ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .sidebar nav li {
+      margin-bottom: 12px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar nav li:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      transform: translateX(5px);
+    }
+
+    .sidebar nav li.active {
+      background-color: rgba(0, 0, 0, 0.08);
+      font-weight: bold;
+    }
+
+    .sidebar nav li i {
+      width: 20px;
+      color: var(--text-dark);
+    }
+
+    .sidebar nav li span {
+      display: inline;
+      font-size: 0.9rem;
+    }
+
+    .sidebar.collapsed nav li span {
+      display: none;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 20px;
+    }
+
+    .user-profile:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar.collapsed .user-info {
+      display: none;
+    }
+
+    .profile-icon {
+      width: 32px;
+      height: 32px;
+      background-color: var(--primary-blue);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .user-info {
+      margin-left: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .user-role {
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: #666;
+    }
+
+    .hamburger {
+      display: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-dark);
+      margin-bottom: 20px;
+    }
+
+    .sidebar nav li a {
+      color: inherit;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .sidebar nav li a:hover {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* Main Content Styles */
+    .main-content {
+      flex: 1;
+      padding: 32px 40px;
+      margin-left: 180px;
+      background: white;
+      overflow-y: auto;
+      width: calc(100% - 180px);
+      transition: margin-left 0.3s ease, width 0.3s ease;
+    }
+
+    .main-content.expanded {
+      margin-left: 50px;
+      width: calc(100% - 50px);
+    }
+
+    h1 {
+      color: var(--primary-blue);
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1rem;
+      padding: 0 1rem;
+    }
+
+    .hire-card {
+      background: #fff;
+      padding: 1.25rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      transition: transform 0.3s;
+      cursor: pointer;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hire-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .hire-card h3 {
+      margin: 0 0 0.75rem 0;
+      color: var(--primary-blue);
+      font-size: 1.2rem;
+    }
+
+    .hire-card p {
+      margin: 0.25rem 0;
+      font-size: 0.9rem;
+    }
+
+    .progress-bar-container {
+      background-color: #eee;
+      border-radius: 5px;
+      height: 6px;
+      margin: 0.5rem 0 1rem;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background-color: var(--primary-blue);
+      border-radius: 5px;
+    }
+
+    /* AI Chatbox Styles */
+    .ai-chatbox {
+      position: fixed;
+      bottom: 100px;
+      right: 30px;
+      width: 350px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #eee;
+    }
+
+    .ai-chatbox.active {
+      display: flex;
+    }
+
+    .chatbox-header {
+      background-color: var(--primary-blue);
+      color: white;
+      padding: 15px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chatbox-messages {
+      padding: 15px;
+      height: 300px;
+      overflow-y: auto;
+      background-color: #f9f9f9;
+    }
+
+    .message {
+      margin-bottom: 12px;
+      max-width: 80%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .ai-message {
+      background-color: white;
+      border: 1px solid #eee;
+      border-radius: 12px 12px 12px 0;
+      align-self: flex-start;
+    }
+
+    .user-message {
+      background-color: var(--primary-blue);
+      color: white;
+      border-radius: 12px 12px 0 12px;
+      align-self: flex-end;
+    }
+
+    .chatbox-input {
+      display: flex;
+      border-top: 1px solid #eee;
+      padding: 10px;
+      background: white;
+    }
+
+    .chatbox-input input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      outline: none;
+      font-size: 0.9rem;
+    }
+
+    .chatbox-input button {
+      background: var(--primary-blue);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin-left: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chatbox-input button:hover {
+      background: #0066cc;
+    }
+
+    .quick-questions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-top: 1px solid #eee;
+    }
+
+    .quick-question-btn {
+      background: var(--primary-green);
+      color: var(--text-dark);
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-question-btn:hover {
+      background: #85d722;
+    }
+
+    .ai-assistant-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 60px;
+      height: 60px;
+      background-color: var(--primary-blue);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 124, 247, 0.3);
+      z-index: 999;
+      transition: all 0.3s;
+    }
+
+    .ai-assistant-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(0, 124, 247, 0.4);
+    }
+
+    .ai-assistant-btn i {
+      font-size: 1.5rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message {
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .login-page {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      width: 350px;
+      text-align: center;
+    }
+
+    .google-login-btn {
+      background-color: #fff;
+      color: #757575;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px 15px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px auto;
+      width: 80%;
+      transition: background-color 0.3s;
+    }
+
+    .google-login-btn:hover {
+      background-color: #f7f7f7;
+    }
+
+    .google-logo {
+      width: 18px;
+      height: 18px;
+      margin-right: 10px;
+    }
+
+    .preview-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .preview-card {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 1.25rem;
+      box-shadow: var(--box-shadow);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--primary-green);
+    }
+
+    .preview-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .preview-card h3 {
+      color: var(--primary-blue);
+      margin: 0 0 0.75rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      margin: 0.75rem auto;
+    }
+
+    .pie-chart {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--primary-blue) 0% 70%,
+        var(--light-gray) 70% 100%
+      );
+      position: relative;
+    }
+
+    .chart-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50px;
+      height: 50px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: var(--primary-blue);
+      font-size: 0.9rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      margin: 0.75rem 0;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 0.5rem;
+      background: var(--light-gray);
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-item::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--primary-green);
+      opacity: 0.5;
+    }
+
+    .stat-value {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--primary-blue);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: #666;
+    }
+
+    .progress-indicator {
+      width: 100%;
+      height: 6px;
+      background: var(--light-gray);
+      border-radius: 3px;
+      margin: 0.5rem 0;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--primary-green);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 0.5rem;
+      background: var(--primary-green);
+      color: var(--text-dark);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .action-btn:hover {
+      background: #85d722;
+      transform: translateY(-2px);
+    }
+
+    .trend-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .trend-up {
+      color: #4CAF50;
+    }
+
+    .trend-down {
+      color: #f44336;
+    }
+
+    .new-hires-section {
+      margin: 1.5rem 0;
+    }
+
+    .leaderboard-card {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--box-shadow);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .leaderboard-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--primary-green);
+    }
+
+    .leaderboard-card h3 {
+      color: var(--primary-blue);
+      margin: 0 0 1rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .leaderboard-table th,
+    .leaderboard-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    .leaderboard-table th {
+      background: var(--light-gray);
+      color: var(--primary-blue);
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .leaderboard-table th:hover {
+      background: #e0e0e0;
+    }
+
+    .leaderboard-table th.sort-asc::after {
+      content: ' ↑';
+    }
+
+    .leaderboard-table th.sort-desc::after {
+      content: ' ↓';
+    }
+
+    .leaderboard-table tr:hover {
+      background: #f9f9f9;
+    }
+
+    .leaderboard-table td {
+      color: #333;
+    }
+
+    .leaderboard-table td a {
+      color: var(--primary-blue);
+      text-decoration: none;
+    }
+
+    .leaderboard-table td a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+      .main-content {
+        padding: 20px;
+      }
+
+      .leaderboard-table {
+        font-size: 0.85rem;
+      }
+
+      .leaderboard-table th,
+      .leaderboard-table td {
+        padding: 0.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 50px;
+      }
+
+      .main-content {
+        margin-left: 50px;
+        width: calc(100% - 50px);
+        padding: 15px;
+      }
+
+      .hamburger {
+        display: block;
+      }
+
+      .ai-chatbox {
+        width: 90%;
+        right: 5%;
+        bottom: 80px;
+      }
+
+      .preview-section {
+        grid-template-columns: 1fr;
+      }
+
+      .leaderboard-table {
+        font-size: 0.8rem;
+      }
+
+      .leaderboard-table th,
+      .leaderboard-table td {
+        padding: 0.5rem;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .preview-section {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 800px;
+        margin: 1.5rem auto;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .card-grid {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 1200px;
+        margin: 1rem auto;
+      }
+
+      .preview-section {
+        max-width: 1000px;
+      }
+
+      .leaderboard-table {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+    }
+
+    @media (min-width: 1600px) {
+      .card-grid {
+        max-width: 1400px;
+      }
+
+      .preview-section {
+        max-width: 1200px;
+      }
+
+      .leaderboard-table {
+        max-width: 1400px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar Navigation -->
+  <div class="sidebar" id="sidebar">
+    <div>
+      <div class="hamburger" id="hamburger"><i class="fas fa-bars"></i></div>
+      <h1 class="pixel-logo">Bit.Buddy</h1>
+      <nav>
+        <ul>
+          <li class="active">
+            <a href="homepage(manager).html">
+              <i class="fas fa-home"></i> <span>Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="timeline(manager).html">
+              <i class="fas fa-clock"></i> <span>Timeline</span>
+            </a>
+          </li>
+          <li>
+            <a href="document(manager).html">
+              <i class="fas fa-file-alt"></i> <span>Documents</span>
+            </a>
+          </li>
+          <li>
+            <a href="resources(manager).html">
+              <i class="fas fa-book"></i> <span>Resources</span>
+            </a>
+          </li>
+          <li>
+            <a href="team(manager).html">
+              <i class="fas fa-users"></i> <span>Team</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <div class="user-profile" id="profileBtn" tabindex="0" role="button" aria-label="User profile">
+      <div class="profile-icon">
+        <i class="fas fa-user-tie" aria-hidden="true"></i>
+      </div>
+      <div class="user-info">
+        <div class="user-name">Sarah Johnson</div>
+        <div class="user-role">Manager Mode</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="main-content" id="mainContent">
+    <h1>Manager Dashboard</h1>
+
+    <div class="preview-section">
+      <!-- Timeline Preview -->
+      <div class="preview-card" onclick="window.location.href='timeline(manager).html'">
+        <h3><i class="fas fa-clock"></i> Timeline</h3>
+        <div class="chart-container">
+          <div class="pie-chart" style="background: conic-gradient(
+            var(--primary-blue) 0% 42%,
+            var(--primary-green) 42% 100%
+          )"></div>
+          <div class="chart-center">5</div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">5</div>
+            <div class="stat-label">Today's Events</div>
+            <div class="trend-indicator trend-up">
+              <i class="fas fa-arrow-up"></i>
+              <span>2 New</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">12</div>
+            <div class="stat-label">This Week</div>
+            <div class="progress-indicator">
+              <div class="progress-bar" style="width: 60%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="quick-actions">
+          <button class="action-btn" onclick="window.location.href='timeline(manager).html'">
+            <i class="fas fa-calendar"></i> View Calendar
+          </button>
+          <button class="action-btn" onclick="window.location.href='timeline(manager).html'">
+            <i class="fas fa-plus"></i> Add Event
+          </button>
+        </div>
+      </div>
+
+      <!-- Documents Preview -->
+      <div class="preview-card" onclick="window.location.href='document(manager).html'">
+        <h3><i class="fas fa-file-alt"></i> Documents</h3>
+        <div class="chart-container">
+          <div class="pie-chart" style="background: conic-gradient(
+            var(--primary-blue) 0% 70%,
+            var(--light-gray) 70% 100%
+          )"></div>
+          <div class="chart-center">70%</div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">24</div>
+            <div class="stat-label">Total Files</div>
+            <div class="trend-indicator trend-up">
+              <i class="fas fa-arrow-up"></i>
+              <span>3 New</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">85%</div>
+            <div class="stat-label">Completion</div>
+            <div class="progress-indicator">
+              <div class="progress-bar" style="width: 85%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="quick-actions">
+          <button class="action-btn" onclick="window.location.href='document(manager).html'">
+            <i class="fas fa-eye"></i> View All
+          </button>
+          <button class="action-btn" onclick="window.location.href='document(manager).html'">
+            <i class="fas fa-upload"></i> Upload
+          </button>
+        </div>
+      </div>
+
+      <!-- Resources Preview -->
+      <div class="preview-card" onclick="window.location.href='document(manager).html'">
+        <h3><i class="fas fa-book"></i> Resources</h3>
+        <div class="chart-container">
+          <div class="pie-chart" style="background: conic-gradient(
+            var(--primary-blue) 0% 18%,
+            var(--primary-green) 18% 100%
+          )"></div>
+          <div class="chart-center">45</div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">45</div>
+            <div class="stat-label">Total Resources</div>
+            <div class="trend-indicator trend-up">
+              <i class="fas fa-arrow-up"></i>
+              <span>8 New</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">90%</div>
+            <div class="stat-label">Utilization</div>
+            <div class="progress-indicator">
+              <div class="progress-bar" style="width: 90%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="quick-actions">
+          <button class="action-btn" onclick="window.location.href='document(manager).html'">
+            <i class="fas fa-search"></i> Browse
+          </button>
+          <button class="action-btn" onclick="window.location.href='document(manager).html'">
+            <i class="fas fa-plus"></i> Add Resource
+          </button>
+        </div>
+      </div>
+
+      <!-- Team Preview -->
+      <div class="preview-card" onclick="window.location.href='team(manager).html'">
+        <h3><i class="fas fa-users"></i> Team</h3>
+        <div class="chart-container">
+          <div class="pie-chart" style="background: conic-gradient(
+            var(--primary-blue) 0% 25%,
+            var(--primary-green) 25% 50%,
+            #FFC107 50% 75%,
+            var(--light-gray) 75% 100%
+          )"></div>
+          <div class="chart-center">12</div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">12</div>
+            <div class="stat-label">Team Members</div>
+            <div class="trend-indicator trend-up">
+              <i class="fas fa-arrow-up"></i>
+              <span>3 New</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">75%</div>
+            <div class="stat-label">Onboarding</div>
+            <div class="progress-indicator">
+              <div class="progress-bar" style="width: 75%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="quick-actions">
+          <button class="action-btn" onclick="window.location.href='team(manager).html'">
+            <i class="fas fa-users"></i> View Team
+          </button>
+          <button class="action-btn" onclick="window.location.href='team(manager).html'">
+            <i class="fas fa-user-plus"></i> Add Member
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="new-hires-section">
+      <div class="leaderboard-card">
+        <h3><i class="fas fa-trophy"></i> New Hires Leaderboard</h3>
+        <table class="leaderboard-table" id="leaderboardTable">
+          <thead>
+            <tr>
+              <th data-sort="name">Name</th>
+              <th data-sort="department">Department</th>
+              <th data-sort="onboarding">Onboarding (%)</th>
+              <th data-sort="documents">Documents</th>
+              <th data-sort="training">Training</th>
+              <th data-sort="introductions">Introductions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="profile_alex.html">Alex Chen</a></td>
+              <td>Engineering</td>
+              <td data-value="85">85%</td>
+              <td data-value="20">20/20</td>
+              <td data-value="15">15/20</td>
+              <td data-value="12">12/20</td>
+            </tr>
+            <tr>
+              <td><a href="profile_jamie.html">Jamie Lee</a></td>
+              <td>Design</td>
+              <td data-value="60">60%</td>
+              <td data-value="18">18/20</td>
+              <td data-value="8">8/20</td>
+              <td data-value="14">14/20</td>
+            </tr>
+            <tr>
+              <td><a href="profile_priya.html">Priya Patel</a></td>
+              <td>Marketing</td>
+              <td data-value="92">92%</td>
+              <td data-value="20">20/20</td>
+              <td data-value="13">13/20</td>
+              <td data-value="18">18/20</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card-grid">
+        <div class="hire-card" onclick="window.location.href='profile_alex.html'">
+          <h3>Alex Chen</h3>
+          <p><strong>Engineering</strong></p>
+          <p>Onboarding: 85%</p>
+          <div class="progress-bar-container"><div class="progress-bar" style="width: 85%"></div></div>
+          <p>Documents: 20/20</p>
+          <p>Training: 15/20</p>
+          <p>Introductions: 12/20</p>
+        </div>
+
+        <div class="hire-card" onclick="window.location.href='profile_jamie.html'">
+          <h3>Jamie Lee</h3>
+          <p><strong>Design</strong></p>
+          <p>Onboarding: 60%</p>
+          <div class="progress-bar-container"><div class="progress-bar" style="width: 60%"></div></div>
+          <p>Documents: 18/20</p>
+          <p>Training: 8/20</p>
+          <p>Introductions: 14/20</p>
+        </div>
+
+        <div class="hire-card" onclick="window.location.href='profile_priya.html'">
+          <h3>Priya Patel</h3>
+          <p><strong>Marketing</strong></p>
+          <p>Onboarding: 92%</p>
+          <div class="progress-bar-container"><div class="progress-bar" style="width: 92%"></div></div>
+          <p>Documents: 20/20</p>
+          <p>Training: 13/20</p>
+          <p>Introductions: 18/20</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Assistant Button -->
+    <div class="ai-assistant-btn" id="aiAssistantBtn">
+      <i class="fas fa-robot"></i>
+    </div>
+
+    <!-- AI Chatbox -->
+    <div class="ai-chatbox" id="aiChatbox">
+      <div class="chatbox-header">
+        <span>AI Onboarding Assistant</span>
+        <button id="closeChatbox" style="background: none; border: none; color: white; cursor: pointer;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="chatbox-messages" id="chatMessages">
+        <div class="message ai-message">
+          Hello Sarah! I'm your AI onboarding assistant. How can I help you with your new hires today?
+        </div>
+        <div class="message ai-message">
+          Try these quick actions or ask me anything about the onboarding process.
+        </div>
+      </div>
+      <div class="quick-questions">
+        <button class="quick-question-btn" data-question="Show progress">Show Progress</button>
+        <button class="quick-question-btn" data-question="High performers">High Performers</button>
+        <button class="quick-question-btn" data-question="Timeline overview">Timeline Overview</button>
+        <button class="quick-question-btn" data-question="Support contacts">Support Contacts</button>
+      </div>
+      <div class="chatbox-input">
+        <input type="text" id="userInput" placeholder="Ask about onboarding..." autocomplete="off">
+        <button id="sendMessage"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+
+    <div class="login-page" id="loginPage">
+      <div class="login-container">
+        <h2>Login to Bit.Buddy</h2>
+        <p>Continue with your Google account</p>
+        <button class="google-login-btn" id="googleLoginBtn">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" class="google-logo" alt="Google logo"/>
+          Continue with Google
+        </button>
+        <p><small>By continuing, you agree to our Terms of Service</small></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Sidebar toggle
+      const hamburger = document.getElementById('hamburger');
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('mainContent');
+
+      hamburger.addEventListener('click', function() {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+      });
+
+      // Profile button functionality
+      const profileBtn = document.getElementById('profileBtn');
+      if (profileBtn) {
+        profileBtn.addEventListener('click', function() {
+          document.getElementById('loginPage').style.display = 'flex';
+        });
+      }
+
+      // AI Chatbox functionality
+      const aiAssistantBtn = document.getElementById('aiAssistantBtn');
+      const aiChatbox = document.getElementById('aiChatbox');
+      const closeChatbox = document.getElementById('closeChatbox');
+      const chatMessages = document.getElementById('chatMessages');
+      const userInput = document.getElementById('userInput');
+      const sendMessageBtn = document.getElementById('sendMessage');
+      const quickQuestionBtns = document.querySelectorAll('.quick-question-btn');
+
+      // Toggle chatbox visibility
+      aiAssistantBtn.addEventListener('click', function() {
+        aiChatbox.classList.toggle('active');
+        if (aiChatbox.classList.contains('active')) {
+          userInput.focus();
+        }
+      });
+
+      closeChatbox.addEventListener('click', function() {
+        aiChatbox.classList.remove('active');
+      });
+
+      // Send message function
+      function sendMessage(message) {
+        if (!message || message.trim() === '') return;
+
+        // Add user message
+        const userMessage = document.createElement('div');
+        userMessage.className = 'message user-message';
+        userMessage.textContent = message;
+        chatMessages.appendChild(userMessage);
+
+        // Clear input
+        userInput.value = '';
+
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // Simulate AI response after a delay
+        setTimeout(() => {
+          const aiResponse = document.createElement('div');
+          aiResponse.className = 'message ai-message';
+          
+          // Enhanced response logic
+          if (message.toLowerCase().includes('progress') || message === 'Show Progress') {
+            aiResponse.innerHTML = "Here's the current onboarding progress:<br>" +
+              "<strong>Alex Chen</strong>: 85% complete<br>" +
+              "<strong>Jamie Lee</strong>: 60% complete<br>" +
+              "<strong>Priya Patel</strong>: 92% complete";
+          } else if (message.toLowerCase().includes('help') || message.toLowerCase().includes('support') || message === 'Support Contacts') {
+            aiResponse.innerHTML = "Support options:<br>" +
+              "• HR Support: Jane Atkins (ext. 456)<br>" +
+              "• IT Helpdesk: 24/7 at ext. 789<br>" +
+              "• Manager Hotline: ext. 111 (8am-6pm)<br>" +
+              "• Emergency Contact: security@company.com";
+          } else if (message.toLowerCase().includes('timeline') || message === 'Timeline Overview') {
+            aiResponse.innerHTML = "Standard onboarding timeline:<br>" +
+              "1. Month 1: Orientation<br>" +
+              "2. Month 2: Training<br>" +
+              "3. Months 3-4: Integration<br>" +
+              "4. Months 5-7: Performance Review<br>" +
+              "5. Months 8-10: Growth<br>" +
+              "6. Month 12: Annual Review<br><br>" +
+              "Would you like to adjust any timelines?";
+          } else if (message.toLowerCase().includes('high performer') || message === 'High Performers') {
+            aiResponse.innerHTML = "Current high performers:<br>" +
+              "<strong>Priya Patel</strong>: Exceeding all metrics<br>" +
+              "<strong>Alex Chen</strong>: Strong technical skills<br>" +
+              "<strong>Jamie Lee</strong>: Creative contributions<br><br>" +
+              "I recommend considering them for:<br>" +
+              "• Mentorship roles<br>" +
+              "• Special projects<br>" +
+              "• Accelerated career paths";
+          } else {
+            aiResponse.textContent = "I've noted your question about \"" + message + "\". I can connect you with the HR team for more detailed information if you'd like.";
+          }
+          
+          chatMessages.appendChild(aiResponse);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 1000);
+      }
+
+      // Send message on button click or Enter key
+      sendMessageBtn.addEventListener('click', () => sendMessage(userInput.value));
+      userInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          sendMessage(userInput.value);
+        }
+      });
+
+      // Quick question buttons
+      quickQuestionBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const question = this.getAttribute('data-question');
+          sendMessage(question);
+        });
+      });
+
+      // Google login
+      document.getElementById('googleLoginBtn').addEventListener('click', function () {
+        window.location.href =
+          'https://accounts.google.com/o/oauth2/auth?' +
+          'client_id=YOUR_CLIENT_ID&' +
+          'redirect_uri=YOUR_REDIRECT_URI&' +
+          'response_type=code&' +
+          'scope=email profile&' +
+          'access_type=offline';
+      });
+
+      document.getElementById('loginPage').addEventListener('click', function (e) {
+        if (e.target === this) {
+          this.style.display = 'none';
+        }
+      });
+
+      // Leaderboard Sorting Functionality
+      const leaderboardTable = document.getElementById('leaderboardTable');
+      const headers = leaderboardTable.querySelectorAll('th[data-sort]');
+      let currentSort = { column: 'onboarding', direction: 'desc' };
+
+      const hires = [
+        {
+          name: 'Alex Chen',
+          profile: 'profile_alex.html',
+          department: 'Engineering',
+          onboarding: 85,
+          documents: 20,
+          documentsTotal: 20,
+          training: 15,
+          trainingTotal: 20,
+          introductions: 12,
+          introductionsTotal: 20
+        },
+        {
+          name: 'Jamie Lee',
+          profile: 'profile_jamie.html',
+          department: 'Design',
+          onboarding: 60,
+          documents: 18,
+          documentsTotal: 20,
+          training: 8,
+          trainingTotal: 20,
+          introductions: 14,
+          introductionsTotal: 20
+        },
+        {
+          name: 'Priya Patel',
+          profile: 'profile_priya.html',
+          department: 'Marketing',
+          onboarding: 92,
+          documents: 20,
+          documentsTotal: 20,
+          training: 13,
+          trainingTotal: 20,
+          introductions: 18,
+          introductionsTotal: 20
+        }
+      ];
+
+      function sortHires(column, direction) {
+        const sortedHires = [...hires].sort((a, b) => {
+          let aValue = a[column];
+          let bValue = b[column];
+
+          if (column === 'name' || column === 'department') {
+            aValue = aValue.toLowerCase();
+            bValue = bValue.toLowerCase();
+            return direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+          } else {
+            return direction === 'asc' ? aValue - bValue : bValue - aValue;
+          }
+        });
+
+        const tbody = leaderboardTable.querySelector('tbody');
+        tbody.innerHTML = '';
+
+        sortedHires.forEach(hire => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><a href="${hire.profile}">${hire.name}</a></td>
+            <td>${hire.department}</td>
+            <td data-value="${hire.onboarding}">${hire.onboarding}%</td>
+            <td data-value="${hire.documents}">${hire.documents}/${hire.documentsTotal}</td>
+            <td data-value="${hire.training}">${hire.training}/${hire.trainingTotal}</td>
+            <td data-value="${hire.introductions}">${hire.introductions}/${hire.introductionsTotal}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      headers.forEach(header => {
+        header.addEventListener('click', () => {
+          const column = header.getAttribute('data-sort');
+          let direction = 'asc';
+
+          if (currentSort.column === column) {
+            direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+          }
+
+          headers.forEach(h => {
+            h.classList.remove('sort-asc', 'sort-desc');
+          });
+
+          header.classList.add(direction === 'asc' ? 'sort-asc' : 'sort-desc');
+          currentSort = { column, direction };
+          sortHires(column, direction);
+        });
+      });
+
+      // Initialize sorting by Onboarding descending
+      sortHires('onboarding', 'desc');
+      leaderboardTable.querySelector('th[data-sort="onboarding"]').classList.add('sort-desc');
+    });
+  </script>
+</body>
+</html>
