@@ -2,7 +2,7 @@
 
 > An onboarding assistant that helps new hires and managers streamline the onboarding process for a seamless transition.
 
-Feel free to explore our project here: [Website](https://biakuya.github.io/bit-buddy-onboarding/)
+Feel free to explore our project here: [bit.buddy](https://biakuya.github.io/bit-buddy-onboarding/)
 ---
 
 ## 📖 About
